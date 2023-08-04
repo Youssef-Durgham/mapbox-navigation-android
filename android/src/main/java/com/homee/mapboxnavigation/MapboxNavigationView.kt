@@ -87,7 +87,6 @@ class MapboxNavigationView(private val context: ThemedReactContext, private val 
     }
 
     private var origin: Point? = null
-    private var routeCoordinates: List<Point> = emptyList()
     private var destination: Point? = null
     private var shouldSimulateRoute = false
     private var showsEndOfRouteFeedback = false
@@ -628,9 +627,7 @@ class MapboxNavigationView(private val context: ThemedReactContext, private val 
         mapboxNavigation.registerVoiceInstructionsObserver(voiceInstructionsObserver)
         mapboxNavigation.registerRouteProgressObserver(replayProgressObserver)
 
-        if (routeCoordinates.isNotEmpty()) {
-            findRoute(routeCoordinates)
-       }
+        this.origin?.let { this.destination?.let { it1 -> this.findRoute(it, it1) } }
     }
 
     override fun onDetachedFromWindow() {
@@ -652,13 +649,13 @@ class MapboxNavigationView(private val context: ThemedReactContext, private val 
         voiceInstructionsPlayer.shutdown()
     }
 
-    private fun findRoute(coordinates: List<Point>) {
+    private fun findRoute(origin: Point, destination: Point) {
         try {
             mapboxNavigation.requestRoutes(
                 RouteOptions.builder()
                     .applyDefaultNavigationOptions()
                     .applyLanguageAndVoiceUnitOptions(context)
-                    .coordinatesList(coordinates)
+                    .coordinatesList(listOf(origin, destination))
                     .profile(DirectionsCriteria.PROFILE_DRIVING)
                     .steps(true)
                     .build(),
@@ -750,11 +747,6 @@ class MapboxNavigationView(private val context: ThemedReactContext, private val 
 
     fun setOrigin(origin: Point?) {
         this.origin = origin
-    }
-
-    fun setRouteCoordinates(routeCoordinates: List<Point>?) {
-
-        this.routeCoordinates = routeCoordinates ?: emptyList()
     }
 
     fun setDestination(destination: Point?) {
